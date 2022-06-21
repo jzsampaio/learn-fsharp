@@ -1,0 +1,601 @@
+#+TITLE: Preparing for BP's Practical Test
+
+* Instructions for Preparing for the Test
+
+#+begin_quote
+Sugerimos que estude assuntos relacionados a for loops, listas, hash
+maps não será algo tão complexo nem terá pegadinhas.
+#+end_quote
+
+* Using LSP on org-mode for F#
+
+The file you are reading was written in org. Code snippets are in F#
+and written in org source blocks. By using the package ~ob-fsharp~ the
+source block activates fsharp-mode, which manages indentation and code
+highlight. This also enable ~C-c C-c~ to evaluate F# code and write
+the result to ~RESULTS~. By using ~lsp-org~ we get tooltips and
+go-to-definition.
+
+Notes:
+
+- Add ~:tangle "<filename>"~ on your source block
+- Put the cursor under a source block and execute ~lsp-org~
+- End lsp with command ~lsp-virtual-buffer-disconnect~
+
+* Operators
+
+- <<, >>
+- =, <>
+- not
+- <|, <||, <||, |>, ||>, |||>
+- @: concatenate 2 lists
+- ^: concatenate 2 strings
+- ceil, exp, floor, truncate, log, log10, max, min, pown, round, sign, sqrt,
+- fst, snd
+- id, ignore, nameof
+- infinity, infinityf, nan, nanf
+- failwith, invalidArg, invalidOp, nullArg, raise, reraise, failwithf
+- printfn, eprintf, eprintfn, fprintf, fprintfn, sprintf
+
+* For loops
+
+There are many ways to loop data structures in F#. The following demo
+shows how to:
+
+- Use a for loop
+- Use ~List.iter~
+- Use ~List.iteri~
+
+#+begin_src fsharp :tangle "looping-demo.fsx"
+  let xs = [ 0 .. 2 .. 10 ]
+
+  for x in xs do
+      printfn "With a for loop: %d" x
+
+  xs
+  |> List.iter (fun x -> printfn "With List.iter: %d" x)
+
+
+  xs
+  |> List.iteri (fun i x -> printfn "With List.iteri: (%d, %d)" i x)
+
+#+end_src
+
+#+RESULTS:
+: ()
+
+* List
+** allPairs
+
+#+begin_src fsharp :tangle "allPairs.fsx"
+  let xs = [0..3..10]
+  let hs = [1..2..10]
+  List.allPairs xs hs
+#+end_src
+
+#+RESULTS:
+:   [(0, 1), (0, 3), (0, 5), (0, 7), (0, 9), (3, 1), (3, 3), (3, 5), (3, 7),
+
+** append
+
+#+begin_src fsharp :tangle "append.fsx"
+let xs = [0 .. 10]
+List.append xs xs
+#+end_src
+
+#+RESULTS:
+:   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+** average
+
+#+begin_src fsharp :tangle "average.fsx"
+let xs = [0.0 .. 10.0]
+List.average xs
+#+end_src
+
+#+RESULTS:
+: 5.0
+
+** averageBy
+#+begin_src fsharp :tangle "averageBy.fsx"
+  let xs = [0 .. 10]
+  List.averageBy (fun x -> (float x) ** 2.0) xs
+#+end_src
+
+#+RESULTS:
+: 35.0
+
+** choose
+#+begin_src fsharp :tangle "choose.fsx"
+  let xs = [0 .. 10]
+  List.choose (fun x -> match x % 2 with | 0 -> Some x | _ -> None) xs
+#+end_src
+
+#+RESULTS:
+| 0 | 2 | 4 | 6 | 8 | 10 |
+
+** chunkBySize
+
+Note: "chunk" here means "to split a list into sub lists"
+
+#+begin_src fsharp :tangle "chunkBySize.fsx"
+let xs = [0 .. 10]
+List.chunkBySize 3 xs
+#+end_src
+
+#+RESULTS:
+| 0 |  1 | 2 |
+| 3 |  4 | 5 |
+| 6 |  7 | 8 |
+| 9 | 10 |   |
+
+** collect
+
+Note: this one is *very* useful!
+
+#+begin_src fsharp :tangle "collect.fsx"
+  let xs = [0 .. 10]
+  List.collect (fun x -> [0 .. x]) xs
+#+end_src
+
+#+RESULTS:
+:   [0, 0, 1, 0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3,
+
+** compareWith
+
+#+begin_src fsharp :tangle "compareWith.fsx"
+  type T = { x: int; y: int}
+  let xs = [{ x = 0; y = 1 };]
+  let ys = [{ x = 10; y = 1 };]
+  match List.compareWith (fun a b -> a.x - b.x) xs ys with
+    | ans when ans < 0 -> "ys is bigger!"
+    | ans when ans > 0 -> "xs is bigger!"
+    | 0 -> "Both are the same!"
+    | _ -> "Unexpected!"
+#+end_src
+
+#+RESULTS:
+: YS is bigger!
+
+** concat
+
+Note: this is what I think as ~flatten~ operator.
+
+#+begin_src fsharp :tangle "concat.fsx"
+let xs = [0 .. 10]
+List.concat [xs; xs]
+#+end_src
+
+#+RESULTS:
+:   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+** contains
+#+begin_src fsharp :tangle "contains.fsx"
+let xs = [0 .. 10]
+List.contains 11 xs
+#+end_src
+
+#+RESULTS:
+: false
+
+** countBy
+#+begin_src fsharp :tangle "countBy.fsx"
+  let xs = [0 .. 10]
+  List.countBy (fun x -> x % 3) xs
+#+end_src
+
+#+RESULTS:
+| 0 | 4 |
+| 1 | 4 |
+| 2 | 3 |
+
+** distinct
+#+begin_src fsharp :tangle "distinct.fsx"
+let xs = [ 0; 0; 1]
+List.distinct xs
+#+end_src
+
+#+RESULTS:
+| 0 | 1 |
+
+** distinctBy
+#+begin_src fsharp :tangle "distinctBy.fsx"
+  type T = {id: int; c: int}
+  let xs = [0 .. 10] |> List.map (fun x -> { id=x; c=x%3})
+  List.distinctBy (fun x -> x.c) xs
+#+end_src
+
+#+RESULTS:
+: [{ id = 0
+** empty
+
+Note how on the usage of ~List.empty~ below the compiler know that it
+must produce an empty integer string.
+
+#+begin_src fsharp :tangle "empty.fsx"
+  let rec f xs acc =
+      match xs with
+          | [] -> acc
+          | h::tail -> f tail (h::acc)
+
+  f [0..10]  List.empty
+#+end_src
+
+#+RESULTS:
+| 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+
+** exactlyOne
+#+begin_src fsharp :tangle "exactlyOne.fsx"
+let xs = [0 .. 10]
+List.exactlyOne xs
+#+end_src
+
+#+RESULTS:
+: System.ArgumentException: The input sequence contains more than one element. (Parameter 'source')
+:    at Microsoft.FSharp.Collections.ListModule.ExactlyOne[T](FSharpList`1 list) in D:\workspace\_work\1\s\src\fsharp\FSharp.Core\list.fs:line 675
+:    at <StartupCode$FSI_0124>.$FSI_0124.main@()
+: Stopped due to error
+
+#+begin_src fsharp :tangle "exactlyOne2.fsx"
+let xs = [0]
+List.exactlyOne xs
+#+end_src
+
+#+RESULTS:
+: 0
+
+** except
+#+begin_src fsharp :tangle "except.fsx"
+  let xs = [0 .. 10]
+  List.except (xs |> ((List.map (fun x -> x%3)) >> List.distinct)) xs
+#+end_src
+
+#+RESULTS:
+| 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+
+** exists
+#+begin_src fsharp :tangle "exists.fsx"
+let xs = [0 .. 10]
+List.exists
+#+end_src
+* Map
+
+Immutable maps based on binary trees, where keys are ordered by F#
+generic comparison. By default comparison is the F# structural
+comparison function or uses implementations of the IComparable
+interface on key values.
+
+All members of this class are thread-safe and may be used concurrently
+from multiple threads.
+
+** ~dict~ vs ~Map~
+
+- ~dict~ creates a read only ~System.Collections.Generic.Dictionary~
+  (common on C#)
+- Why read-only?
+    * Because on functional style we prefer read only data structures
+- Dictionaries are fast for reading
+- ~Map~ are ~O(log n)~ for searching, removing, and adding
+
+- From the book ~Get Programmign w/ F#~:
+
+  #+begin_quote
+- Use Map as your default lookup type. It’s immutable, and has good
+  support for F# tuples and pipelining.
+- Use the dict function to quickly generate an IDictionary that’s
+  needed for interoperability with other code (for example, BCL
+  code). The syntax is lightweight and is easier to create than a full
+  Dictionary.
+- Use Dictionary if you need a mutable dictionary, or have a block of
+  code with specific performance requirements. Generally, the
+  performance of Map will be fine, but if you’re in a tight loop
+  performing thousands of additions or removals to a lookup, a
+  Dictionary will perform better. As always, optimize as needed,
+  rather than prematurely.
+  #+end_quote
+
+** Constructing a map
+
+Let's how to *do X*.
+
+#+begin_src fsharp :tangle "Map.fsx"
+  [0 .. 4]
+  |> List.map (fun x -> (x, x*x))
+  |> Map // same as ~Map.ofList~
+
+  [| ("juarez", 28); ("magueta", 22) |]
+  |> Map.ofArray
+
+  seq {
+      yield ("juarez", 28)
+      yield ("magueta", 22)
+  }
+  |> Map.ofSeq
+#+end_src
+
+#+RESULTS:
+: map [("juarez", 28); ("magueta", 22)]
+
+** Map.add
+#+begin_src fsharp :tangle "Map.add.fsx"
+  Map.empty
+  |> Map.add "k" 0
+#+end_src
+
+#+RESULTS:
+: map [("k", 0)]
+
+** Map.change
+#+begin_src fsharp :tangle "Map.change.fsx"
+  Map [ (0,0) ]
+  |> Map.change 0 (function | Some x -> Some 1 | None -> None)
+  |> Map.change 1 (function | Some x -> Some 1 | None -> Some 99) // Can be used to add elements
+  |> Map.change 1 (function | Some x -> None | None -> Some 0) // Can be used to remove elements
+#+end_src
+
+#+RESULTS:
+: map [(0, 1)]
+
+** Map.containsKey
+#+begin_src fsharp :tangle "Map.containsKey.fsx"
+  Map [(0,0)]
+  |> Map.containsKey 1
+#+end_src
+
+#+RESULTS:
+: false
+
+** Map.count
+#+begin_src fsharp :tangle "Map.count.fsx"
+  Map [(0,0); (1,1)]
+  |> Map.count
+#+end_src
+
+#+RESULTS:
+: 2
+
+** Map.empty
+
+Note how on the example below the compile is able to infer that the
+type of the map is ~Map<int, int>~.
+
+#+begin_src fsharp :tangle "Map.empty.fsx"
+  let inc v acc =
+      acc
+      |> Map.change v (function | Some x -> Some (x + 1) | None -> Some 1)
+
+  let rec countOccurrence acc xs =
+      match xs with
+          | [] -> acc
+          | x::tail -> countOccurrence (inc x acc) tail
+
+  [1; 2; 2; 3; 3; 3]
+  |> countOccurrence Map.empty
+#+end_src
+
+#+RESULTS:
+: map [(1, 1); (2, 2); (3, 3)]
+** Map.exists
+#+begin_src fsharp :tangle "Map.exists.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |> Map.exists (fun name age -> age > 25)
+#+end_src
+
+#+RESULTS:
+: true
+
+** Map.filter
+#+begin_src fsharp :tangle "Map.filter.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |> Map.filter (fun name age -> age > 25)
+#+end_src
+
+#+RESULTS:
+: map [("juarez", 28)]
+
+** Map.find
+#+begin_src fsharp :tangle "Map.find.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |> Map.find "juarez"
+#+end_src
+
+#+RESULTS:
+: 28
+
+** Map.findKey
+#+begin_src fsharp :tangle "Map.findKey.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |> Map.findKey (fun key age -> key = "juarez" && age = 28)
+#+end_src
+
+#+RESULTS:
+: juarez
+** Map.fold
+#+begin_src fsharp :tangle "Map.fold.fsx"
+  [0..3]
+  |> List.map (fun x -> (x, x*x))
+  |> Map
+  |> Map.fold (fun acc k v -> Map.add v k acc) Map.empty
+#+end_src
+
+#+RESULTS:
+: map [(0, 0); (1, 1); (4, 2); (9, 3)]
+
+** Map.foldBack
+#+begin_src fsharp :tangle "Map.foldBack.fsx"
+  (Map [("foo", 1); ("bar", 2)], "initial")
+  ||> Map.foldBack (fun k v acc -> sprintf "%s %d %s" k v acc)
+#+end_src
+
+#+RESULTS:
+: bar 2 foo 1 initial
+
+** Map.forall
+#+begin_src fsharp :tangle "Map.forall.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |> Map.forall (fun name age -> age > 18)
+#+end_src
+
+#+RESULTS:
+: true
+
+** isEmpty
+#+begin_src fsharp :tangle "isEmpty.fsx"
+  Map.empty
+  |> Map.isEmpty
+#+end_src
+
+#+RESULTS:
+: true
+
+** TODO Map.iter
+
+** TODO Map.keys
+
+** Map.map
+#+begin_src fsharp :tangle "Map.map.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |> Map.map (fun k age -> {|Name = k; Age = age|})
+#+end_src
+
+#+RESULTS:
+:   map [("juarez", { Age = 28
+
+** TODO Map.maxKeyValue
+
+** TODO Map.minKeyValue
+** Map.partition
+#+begin_src fsharp :tangle "Map.partition.fsx"
+  let canBeCAC, cannotBeCAC =
+      Map [("juarez", 28); ("magueta", 22)]
+      |> Map.partition (fun k age -> age > 25)
+  canBeCAC
+#+end_src
+
+#+RESULTS:
+: map [("magueta", 22)]
+
+** Map.remove
+#+begin_src fsharp :tangle "Map.remove.fsx"
+  Map [("juarez", 28); ("magueta", 22)]
+  |>  Map.remove "juarez"
+#+end_src
+
+#+RESULTS:
+: map [("magueta", 22)]
+
+** TODO Map.toArray, Map.toList, Map.toSeq, Map.values
+#+begin_src fsharp :tangle "Map.toArray.fsx"
+Map.toArray
+#+end_src
+
+** Map.pick, Map.tryFind, Map.tryFindKey, Map.tryPick
+
+| Function       | Signature                                                           | Exception? |
+|----------------+---------------------------------------------------------------------+------------|
+| Map.pick       | chooser: ('K -> 'T -> 'U option) -> table: Map<'K, 'T> -> 'U        | Yes        |
+| Map.tryPick    | chooser: ('K -> 'T -> 'U option) -> table: Map<'K, 'T> -> 'U option |            |
+| Map.find       | key: 'K -> table: Map<'K, 'T> -> 'T                                 | Yes        |
+| Map.tryFind    | key: 'K -> table: Map<'K, 'T> -> 'T option                          |            |
+| Map.tryFindKey | predicate: ('K -> 'T -> bool) -> table: Map<'K, 'T> -> 'K option    |            |
+* WIP Set
+
+Immutable sets based on binary trees, where elements are ordered by F#
+generic comparison. By default comparison is the F# structural
+comparison function or uses implementations of the IComparable
+interface on element values.
+
+** Construction
+
+** setConstructions
+#+begin_src fsharp :tangle "setConstructions.fsx"
+
+Set(seq{1..10})
+
+#+end_src
+
+#+RESULTS:
+: set [1; 2; 3; 4; 5; 6; 7; 8; 9; ...]
+
+** Basic operations w/ this notation
+
+** setBasicOpWithThisNotation
+#+begin_src fsharp :tangle "setBasicOpWithThisNotation.fsx" :results output
+
+  let s = Set(seq{1..10})
+
+  let x = s.Add(99).Add(100).Remove(2)
+
+  [s.Count, s.Contains(99);
+   x.Count, x.Contains(99)]
+
+  let ss =[
+      Set(seq{1..4})
+      Set(seq{2..3})
+      Set(seq{0..5}) ]
+
+  printfn "A, B, is subset, is proper subset, is superset is proper superset"
+  (ss, ss)
+  ||> List.allPairs
+  |> List.iter (fun (a, b) ->
+                    printfn "%30A,%30A,%5b,%5b,%5b,%5b" a b (a.IsSubsetOf(b)) (a.IsProperSubsetOf(b)) (a.IsSupersetOf(b)) (a.IsProperSupersetOf(b)))
+
+#+end_src
+
+#+RESULTS:
+#+begin_example
+A, B, is subset, is proper subset, is superset is proper superset
+set [1; 2; 3; 4],set [1; 2; 3; 4], true,false, true,false
+set [1; 2; 3; 4],set [2; 3],false,false, true, true
+set [1; 2; 3; 4],set [0; 1; 2; 3; 4; 5], true, true,false,false
+set [2; 3],set [1; 2; 3; 4], true, true,false,false
+set [2; 3],set [2; 3], true,false, true,false
+set [2; 3],set [0; 1; 2; 3; 4; 5], true, true,false,false
+set [0; 1; 2; 3; 4; 5],set [1; 2; 3; 4],false,false, true, true
+set [0; 1; 2; 3; 4; 5],set [2; 3],false,false, true, true
+set [0; 1; 2; 3; 4; 5],set [0; 1; 2; 3; 4; 5], true,false, true,false
+val s : Set<int> = set [1; 2; 3; 4; 5; 6; 7; 8; 9; ...]
+val x : Set<int> = set [1; 3; 4; 5; 6; 7; 8; 9; 10; ...]
+val ss : Set<int> list =
+  [set [1; 2; 3; 4]; set [2; 3]; set [0; 1; 2; 3; 4; 5]]
+#+end_example
+
+* Example of composition using fmap
+
+** fmap-demo
+
+Demo for Onofre on <2022-06-17 sex>
+
+#+begin_src fsharp :tangle "fmap-demo.fsx"
+    type JOption<'T> = | Ok of 'T | None
+
+    let readUserCountFromDb () =
+        JOption.Ok 10
+
+    let randomBusinessLogic userCount =
+        match userCount with
+            | 0
+            | 1 -> 0
+            | i -> i*i
+
+    let fmapForJOption f wrappedValue =
+        match wrappedValue with
+            | JOption.Ok x -> JOption.Ok (f x)
+            | None -> None
+
+    let (>>=) o f = fmapForJOption f o
+
+    (readUserCountFromDb ())
+    >>= randomBusinessLogic
+    >>= randomBusinessLogic
+    >>= randomBusinessLogic
+
+  // joption {
+  //    let! result = readUserCountFromDb () : int
+  //    let result = readUserCountFromDb () : int option
+  //    return randomBusinessLogic result
+  //}
+#+end_src
+
+#+RESULTS:
+: Ok 100000000
