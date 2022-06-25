@@ -583,18 +583,31 @@ Demo for Onofre on <2022-06-17 sex>
             | JOption.Ok x -> JOption.Ok (f x)
             | None -> None
 
+    let returnForJOption = JOption.Ok
+
+    // if you define your fish operator you can walk with the cool kids
     let (>>=) o f = fmapForJOption f o
 
+    // if you have a JOption, simply start piping
     (readUserCountFromDb ())
     >>= randomBusinessLogic
     >>= randomBusinessLogic
     >>= randomBusinessLogic
 
-  // joption {
-  //    let! result = readUserCountFromDb () : int
-  //    let result = readUserCountFromDb () : int option
-  //    return randomBusinessLogic result
-  //}
+    // if you have a regular value, first wrap w/ return before piping
+    returnForJOption 10
+    >>= randomBusinessLogic
+
+    // alternatively, one could construct a Computation Expression
+    // that allowed you to use let! instead of piping. It would look
+    // something like the following:
+    // joption {
+    //    let! result = readUserCountFromDb () : int
+    //    let result = readUserCountFromDb () : int option
+    //    return randomBusinessLogic result
+    //}
+    // on a computation expresion, the fish-operator >>= is replaced by let!
+    // and the "returnForJOption" is simply return
 #+end_src
 
 #+RESULTS:
